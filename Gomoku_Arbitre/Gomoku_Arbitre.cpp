@@ -13,7 +13,7 @@ int printG(std::string str) {
 
 int main()
 {
-	sf::RenderWindow window(sf::VideoMode(1100, 800), "Arbitre Gomoku");
+	sf::RenderWindow window(sf::VideoMode(1100, 800), "Gomoku 2D - Don't Resize Window !");
 	GomokuA* gomoku = new GomokuA();
 
 	while (window.isOpen())
@@ -52,13 +52,8 @@ int main()
 			}
 		}
 		window.draw(gomoku->getText());
-		if (gomoku->getPlayer() == 0) {
-			//std::cout << "Blue Turn" << std::endl;
-		}
-		else if (gomoku->getPlayer() == 1) {
-			//std::cout << "Red Turn" << std::endl;
-		}
-
+		window.draw(gomoku->getInfoTText());
+		window.draw(gomoku->getInfoT());
 		window.display();
 	}
 	delete(gomoku);

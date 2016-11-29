@@ -8,13 +8,22 @@ int GomokuA::checkMouseClick(int x, int y) {
 	for (int i = 0; i < 19; i++) {
 		for (int j = 0; j < 19; j++) {
 			if ((x < this->coordMatr[i][j][0] + 13) && (x > this->coordMatr[i][j][0] - 13) && (y < this->coordMatr[i][j][1] + 13) && (y > this->coordMatr[i][j][1] - 13)) {
-				//Before Checking
+				//Checking
+
+				if (this->goMatr[i][j] != '0') {
+					std::cout << "Invalid Position: Stone Here." << std::endl;
+					this->changeInfoText("Invalid Position", "ERROR");
+					return (1);
+				}
+
+				//
 				sf::CircleShape circle(200);
 				this->stoneTab[i][j] = circle;
 				this->stoneTab[i][j].setRadius(13);
 				this->stoneTab[i][j].setPointCount(100);
 				this->stoneTab[i][j].setPosition(this->coordMatr[i][j][0] - 12, this->coordMatr[i][j][1] - 12);
 				if (this->getPlayer() == 0) {
+					this->changeInfoText("Oui monsieur.", "SUCCESS");
 					this->goMatr[i][j] = 'B';
 					this->setPlayer(1);
 					this->stoneTab[i][j].setFillColor(sf::Color(0, 255, 255));
@@ -23,6 +32,7 @@ int GomokuA::checkMouseClick(int x, int y) {
 					this->playerT.setFillColor(sf::Color(255, 0, 0));
 				}
 				else {
+					this->changeInfoText("I Win", "WARNING");
 					this->goMatr[i][j] = 'R';
 					this->setPlayer(0);
 					this->stoneTab[i][j].setFillColor(sf::Color(255, 0, 0));
@@ -48,8 +58,31 @@ int GomokuA::displayBoard() {
 	return (0);
 }
 
+void GomokuA::changeInfoText(std::string text, std::string type) {
+	if (type == "ERROR") {
+		this->infoT.setString(text);
+		this->infoT.setFillColor(*this->infoE);
+	}
+	else if (type == "SUCCESS") {
+		this->infoT.setString(text);
+		this->infoT.setFillColor(*this->infoS);
+	}
+	else {
+		this->infoT.setString(text);
+		this->infoT.setFillColor(*this->infoW);
+	}
+}
+
 sf::Font GomokuA::getFont() {
 	return (this->font);
+}
+
+sf::Text GomokuA::getInfoTText() {
+	return (this->infoTitle);
+}
+
+sf::Text GomokuA::getInfoT() {
+	return (this->infoT);
 }
 
 sf::Text GomokuA::getText() {
@@ -90,6 +123,19 @@ GomokuA::GomokuA() {
 	this->playerT.setFillColor(sf::Color(0, 255, 255));
 	this->playerT.setStyle(sf::Text::Bold);
 	this->playerT.setPosition(860, 90);
+
+	this->infoTitle.setFont(this->font);
+	this->infoTitle.setString("Info");
+	this->infoTitle.setCharacterSize(40);
+	this->infoTitle.setFillColor(sf::Color(252, 181, 20));
+	this->infoTitle.setStyle(sf::Text::Bold);
+	this->infoTitle.setPosition(900, 500);
+
+	this->infoT.setFont(this->font);
+	this->infoT.setCharacterSize(20);
+	this->infoT.setString("");
+	this->infoT.setPosition(850, 600);
+
 
 
 	//Init Go Matrix
@@ -165,5 +211,8 @@ GomokuA::GomokuA() {
 }
 
 GomokuA::~GomokuA() {
+	delete (this->infoE);
+	delete (this->infoS);
+	delete (this->infoW);
 	std::cout << "Bye";
 }

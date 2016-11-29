@@ -12,9 +12,13 @@ private:
 	sf::Texture sideboardTexture;
 	sf::Sprite sideboardSprite;
 	int currentP;
-	std::string infoBox;
 	sf::Font font;
 	sf::Text playerT;
+	sf::Text infoT;
+	sf::Text infoTitle;
+	sf::Color* infoE = new sf::Color(217, 83, 79);
+	sf::Color* infoS = new sf::Color(92, 184, 92);
+	sf::Color* infoW = new sf::Color(240, 173, 78);
 
 public:
 	std::vector<std::vector<char> > goMatr;
@@ -24,8 +28,11 @@ public:
 	sf::Vertex verTabV[57][2];
 
 	int checkMouseClick(int, int);
+	void changeInfoText(std::string, std::string);
 	int displayBoard();
 	sf::Text getText();
+	sf::Text getInfoT();
+	sf::Text getInfoTText();
 	int getPlayer();
 	sf::Font getFont();
 	void setPlayer(int player);

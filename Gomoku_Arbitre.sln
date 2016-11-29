@@ -21,6 +21,7 @@ Global
 		{67DF5FC0-92BF-4A7C-95DE-9519CBDC625D}.Release|x64.Build.0 = Release|x64
 		{67DF5FC0-92BF-4A7C-95DE-9519CBDC625D}.Release|x86.ActiveCfg = Release|Win32
 		{67DF5FC0-92BF-4A7C-95DE-9519CBDC625D}.Release|x86.Build.0 = Release|Win32
+		{67DF5FC0-92BF-4A7C-95DE-9519CBDC625D}.Release|x86.Deploy.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
