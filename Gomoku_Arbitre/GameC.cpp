@@ -3,27 +3,38 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 
-int GomokuA::checkMouseClick(int x, int y) {
+#include "Referee.h"
 
+int GomokuA::checkMouseClick(int x, int y) {
+	int result;
 	for (int i = 0; i < 19; i++) {
 		for (int j = 0; j < 19; j++) {
 			if ((x < this->coordMatr[i][j][0] + 13) && (x > this->coordMatr[i][j][0] - 13) && (y < this->coordMatr[i][j][1] + 13) && (y > this->coordMatr[i][j][1] - 13)) {
-				//Checking
 
-				if (this->goMatr[i][j] != '0') {
-					std::cout << "Invalid Position: Stone Here." << std::endl;
-					this->changeInfoText("Invalid Position", "ERROR");
+				//Checking
+				Referee r;
+				result = r.checkPlay(this->vectorToChar(this->goMatr), i, j, this->getPlayer());
+				if (result == 1) {
+					std::cout << "Invalid Play: Stone Already Here" << std::endl;
+					this->changeInfoText("Stone Already Here", "ERROR");
 					return (1);
 				}
+				if (result == 0) {
+					this->changeInfoText("", "SUCCESS");
+				}
+				if (result == 2) {
+					this->changeInfoText("BLUE Wins !", "SUCCESS");
+				}
+				if (result == 3) {
+					this->changeInfoText("RED Wins !", "SUCCESS");
+				}
 
-				//
 				sf::CircleShape circle(200);
 				this->stoneTab[i][j] = circle;
 				this->stoneTab[i][j].setRadius(13);
 				this->stoneTab[i][j].setPointCount(100);
 				this->stoneTab[i][j].setPosition(this->coordMatr[i][j][0] - 12, this->coordMatr[i][j][1] - 12);
 				if (this->getPlayer() == 0) {
-					this->changeInfoText("Oui monsieur.", "SUCCESS");
 					this->goMatr[i][j] = 'B';
 					this->setPlayer(1);
 					this->stoneTab[i][j].setFillColor(sf::Color(0, 255, 255));
@@ -32,7 +43,6 @@ int GomokuA::checkMouseClick(int x, int y) {
 					this->playerT.setFillColor(sf::Color(255, 0, 0));
 				}
 				else {
-					this->changeInfoText("I Win", "WARNING");
 					this->goMatr[i][j] = 'R';
 					this->setPlayer(0);
 					this->stoneTab[i][j].setFillColor(sf::Color(255, 0, 0));
@@ -40,12 +50,28 @@ int GomokuA::checkMouseClick(int x, int y) {
 					this->playerT.setString("Blue Turn");
 					this->playerT.setFillColor(sf::Color(0, 255, 255));
 				}
-				this->displayBoard();
+				//this->displayBoard();
+				this->vectorToChar(this->goMatr);
 				return (0);
 			}
 		}
 	}
 	return (1);
+}
+
+char** GomokuA::vectorToChar(std::vector < std::vector<char> > matr) {
+	char** charMtr;
+
+	charMtr = new char*[19];
+	for (int i = 0; i < 19; i++) {
+		charMtr[i] = new char[19];
+	}
+	for (int k = 0; k < 19; k++) {
+		for (int j = 0; j < 19; j++) {
+			charMtr[k][j] = matr[k][j];
+		}
+	}
+	return (charMtr);
 }
 
 int GomokuA::displayBoard() {
@@ -103,6 +129,10 @@ sf::Sprite GomokuA::getBoard() {
 
 sf::Sprite GomokuA::getSideBoard() {
 	return (this->sideboardSprite);
+}
+
+sf::Sprite GomokuA::getEndScreen() {
+	return (this->endScreenSprite);
 }
 
 //Constructor
@@ -166,9 +196,13 @@ GomokuA::GomokuA() {
 		printG("couldnt load space texture");
 	if (!this->sideboardTexture.loadFromFile("sideboard_texture.jpg"))
 		printG("couldnt load sideboard texture");
+	if (!this->endScreenTexture.loadFromFile("endscreen.png"))
+		printG("couldnt load endscreen texture");
+
 	this->boardSprite.setTexture(this->boardTexture);
 	this->sideboardSprite.setTexture(this->sideboardTexture);
 	this->sideboardSprite.setPosition(sf::Vector2f(800, 0));
+	this->endScreenSprite.setTexture(this->endScreenTexture);
 
 	//Init Grid
 	float x1 = 40;

@@ -9,8 +9,13 @@ class GomokuA {
 private:
 	sf::Texture boardTexture;
 	sf::Sprite boardSprite;
+
 	sf::Texture sideboardTexture;
 	sf::Sprite sideboardSprite;
+
+	sf::Texture endScreenTexture;
+	sf::Sprite endScreenSprite;
+
 	int currentP;
 	sf::Font font;
 	sf::Text playerT;
@@ -27,6 +32,7 @@ public:
 	sf::Vertex verTabH[57][2];
 	sf::Vertex verTabV[57][2];
 
+	char** vectorToChar(std::vector < std::vector<char> > matr);
 	int checkMouseClick(int, int);
 	void changeInfoText(std::string, std::string);
 	int displayBoard();
@@ -38,6 +44,7 @@ public:
 	void setPlayer(int player);
 	sf::Sprite getBoard();
 	sf::Sprite getSideBoard();
+	sf::Sprite getEndScreen();
 	GomokuA();
 	~GomokuA();
 };
