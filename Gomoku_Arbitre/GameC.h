@@ -32,7 +32,9 @@ public:
 	sf::Vertex verTabH[57][2];
 	sf::Vertex verTabV[57][2];
 
+	int** vecToInt(std::vector < std::vector<char> > matr);
 	char** vectorToChar(std::vector < std::vector<char> > matr);
+	int checkIAPlay();
 	int checkMouseClick(int, int);
 	void changeInfoText(std::string, std::string);
 	int displayBoard();

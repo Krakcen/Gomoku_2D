@@ -15,6 +15,17 @@ return values (checkPlay):
 3 : Red Wins
 */
 
+int* Referee::getRetPlay(int val, int x1, int y1, int x2, int y2) {
+	int* retV = new int[5];
+
+	retV[0] = val;
+	retV[1] = x1;
+	retV[2] = y1;
+	retV[3] = x2;
+	retV[4] = y2;
+	return (retV);
+}
+
 char** Referee::dupMatr(char** matr, int y, int x, char p) {
 	char** tmpB;
 
@@ -115,7 +126,7 @@ int Referee::checkWin(char** board, int y, int x, char pStone) {
 	return (0);
 }
 
-int Referee::checkPlay(char** board, int y, int x, int p) {
+int* Referee::checkPlay(char** board, int y, int x, int p) {
 	char** tmp;
 	char pStone;
 	int win;
@@ -130,13 +141,16 @@ int Referee::checkPlay(char** board, int y, int x, int p) {
 
 
 	//Already Taken
-	if (board[y][x] != '0')
-		return (1);
+	if (board[y][x] != '0') {
+		return (this->getRetPlay(1, 0, 0, 0, 0));
+	}
 
 	//Check Win
 	win = this->checkWin(tmp, y, x, pStone);
 	if (win == 1)
-		return (p + 2);
+		return (this->getRetPlay(p + 2, 0, 0, 0, 0));
+
+	return (this->getRetPlay(0, 0, 0, 0, 0));
 }
 
 Referee::Referee() {

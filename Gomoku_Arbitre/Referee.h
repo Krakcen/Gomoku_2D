@@ -5,7 +5,8 @@ class Referee {
 public:
 	char** dupMatr(char**, int, int, char);
 	int checkWin(char**, int, int, char);
-	int checkPlay(char**, int, int, int);
+	int* checkPlay(char**, int, int, int);
+	int* getRetPlay(int, int, int, int, int);
 	Referee();
 	~Referee();
 };

@@ -55,6 +55,9 @@ int main()
 		window.draw(gomoku->getInfoTText());
 		window.draw(gomoku->getInfoT());
 		window.display();
+		if (gomoku->getPlayer() == 1) {
+			gomoku->checkIAPlay();
+		}
 	}
 	delete(gomoku);
     return (0);
