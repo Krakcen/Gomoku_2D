@@ -1,97 +1,95 @@
 #include "stdafx.h"
 #include "GameC.h"
+
+#include "PyLoader.h"
+
 #include <iostream>
 #include <SFML/Graphics.hpp>
 
-#include "lua/src/lua.hpp"
-
 #include "Referee.h"
 
-int createArray(lua_State *L, int** board) {
-	lua_createtable(L, 19, 0);
-	for (int i = 0; i < 19; i++) {
-		lua_createtable(L, 19, 0);
-	}
-	/* Puts key of the first child table on-top of Lua VM stack: */
-	lua_pushnumber(L, 1);
-
-	/*Creates first child table of size 3 non-array elements: */
-	lua_createtable(L, 0, 3);
-
-	/* Fills the first child table: */
-	lua_pushnumber(L, 1);
-	lua_setfield(L, -2, "field1");
-
-	lua_pushnumber(L, 2);
-	/* setfield() pops the value from Lua VM stack. */
-	lua_setfield(L, -2, "field2");
-
-	lua_pushnumber(L, 3);
-	lua_setfield(L, -2, "field3");
-
-	/* Remember, child table is on-top of the stack.
-	* lua_settable() pops key, value pair from Lua VM stack. */
-	lua_settable(L, -3);
-
-	/* Pushes they key value for the second child table: */
-	lua_pushnumber(L, 2);
-
-	/*Creates second child table of size  3 non-array elements: */
-	lua_createtable(L, 0, 3);
-
-	/* Fills the second child table: */
-	lua_pushnumber(L, 10);
-	lua_setfield(L, -2, "field1");
-
-	lua_pushnumber(L, 20);
-	lua_setfield(L, -2, "field2");
-
-	lua_pushnumber(L, 30);
-	lua_setfield(L, -2, "field3");
-
-	/* Remember, child table is still on-top of the stack.
-	* lua_settable pops the key, value pair from Lua VM stack
-	* And puts child table into the parent. */
-	lua_settable(L, -3);
-
-	/* Returns number of output tables:
-	* (1 multidimentional)            */
-	return 1;
-}
-
 int GomokuA::checkIAPlay() {
+	int x;
+	int y;
+	int* result;
 
-/*	this->goMatr[i][j] = 'R';
-	this->setPlayer(0);
-	this->stoneTab[i][j].setFillColor(sf::Color(255, 0, 0));
+	this->pl->PyLoadFunction("main");
+	this->pl->PyCallFunction(PyTuple_Pack(0, NULL));
+	int* xy = pl->PyReturnFunctionTuple();
+	x = xy[0];
+	y = xy[1];
 
-	this->playerT.setString("Blue Turn");
-	this->playerT.setFillColor(sf::Color(0, 255, 255));*/
-	int **board;
+	Referee r;
+	result = r.checkPlay(this->vectorToChar(this->goMatr), y, x, this->getPlayer());
+	if (result[0] == 1) {
+		std::cout << "Invalid Play: Stone Already Here" << std::endl;
+		this->changeInfoText("Stone Already Here", "ERROR");
+		return (1);
+	}
+	/*if (result[0] == 0) {
+		this->changeInfoText("", "SUCCESS");
+	}*/
+	if (result[1] != 0) {
+		int j = 2;
+		int k = 0;
+		k = result[1];
+		while (k > 0) {
+			this->setPairR();
+			//tmp
+			std::cout << "[IA] pair nb: " << this->getPairR() << std::endl;
 
-	board = this->vecToInt(this->goMatr);
-	lua_State *lua_state;
-	lua_state = luaL_newstate();
+			//remove
+			this->goMatr[result[j + 1]][result[j]] = '0';
+			this->goMatr[result[j + 3]][result[j + 2]] = '0';
 
-	luaL_dofile(lua_state, "ia.lua");
-	lua_getglobal(lua_state, "ia");
-	lua_getglobal(lua_state, "search");
-	lua_createtable(lua_state, 19, 0);
+			this->pl->PyLoadFunction("delete_pion");
+			this->pl->PyCallFunction(PyTuple_Pack(2, PyLong_FromLong(j), PyLong_FromLong(j + 1)));
+			this->pl->PyCallFunction(PyTuple_Pack(2, PyLong_FromLong(j + 3), PyLong_FromLong(j + 4)));
 
+			j = j + 4;
+			k--;
+		}
+		this->changeInfoText("Pair Captured", "SUCCESS");
+		if (this->getPairR() >= 5) {
+			this->changeInfoText("IA Won (5 Pairs) !", "SUCCESS");
+			this->end = 1;
+			this->playerT.setString("Game Over");
+			this->playerT.setFillColor(sf::Color(255, 255, 255));
+			this->playerT.setPosition(840, 90);
+			this->end = 1;
+		}
+	}
+	if (result[0] == 3) {
+		this->changeInfoText("IA Won !", "ERROR");
+		this->playerT.setString("Game Over");
+		this->end = 1;
+		this->playerT.setFillColor(sf::Color(255, 255, 255));
+		this->playerT.setPosition(840, 90);
+	}
 
+	this->goMatr[y][x] = 'R';
 
-	lua_close(lua_state);
-
+	sf::CircleShape circle(200);
+	this->stoneTab[y][x] = circle;
+	this->stoneTab[y][x].setRadius(13);
+	this->stoneTab[y][x].setPointCount(100);
+	this->stoneTab[y][x].setPosition(this->coordMatr[y][x][0] - 12, this->coordMatr[y][x][1] - 12);
+	this->stoneTab[y][x].setFillColor(sf::Color(255, 0, 0));
+	
+	if (this->end == 0) {
+		this->playerT.setString("Your Turn");
+		this->playerT.setFillColor(sf::Color(0, 255, 255));
+	}		
 	this->setPlayer(0);
 	return (0);
 }
 
 int GomokuA::checkMouseClick(int x, int y) {
 	int* result;
+
 	for (int i = 0; i < 19; i++) {
 		for (int j = 0; j < 19; j++) {
 			if ((x < this->coordMatr[i][j][0] + 13) && (x > this->coordMatr[i][j][0] - 13) && (y < this->coordMatr[i][j][1] + 13) && (y > this->coordMatr[i][j][1] - 13)) {
-
 				//Checking
 				Referee r;
 
@@ -104,11 +102,40 @@ int GomokuA::checkMouseClick(int x, int y) {
 				if (result[0] == 0) {
 					this->changeInfoText("", "SUCCESS");
 				}
-				if (result[0] == 2) {
-					this->changeInfoText("BLUE Wins !", "SUCCESS");
+				//Pair
+				if (result[1] != 0) {
+					int j = 2;
+					int k = 0;
+					k = result[1];
+					while (k > 0) {
+						this->setPairB();
+
+						//remove
+						this->goMatr[result[j + 1]][result[j]] = '0';
+						this->goMatr[result[j + 3]][result[j + 2]] = '0';
+
+						this->pl->PyLoadFunction("delete_pion");
+						this->pl->PyCallFunction(PyTuple_Pack(2, PyLong_FromLong(j), PyLong_FromLong(j + 1)));
+						this->pl->PyCallFunction(PyTuple_Pack(2, PyLong_FromLong(j + 3), PyLong_FromLong(j + 4)));
+
+						j = j + 4;
+						k--;
+					}
+					this->changeInfoText("Pair Captured", "SUCCESS");
+					if (this->getPairB() >= 5) {
+						this->changeInfoText("You Won (5 Pairs) !", "SUCCESS");
+						this->end = 1;
+						this->playerT.setString("Game Over");
+						this->playerT.setPosition(840, 90);
+						this->playerT.setFillColor(sf::Color(255, 255, 255));
+					}
 				}
-				if (result[0] == 3) {
-					this->changeInfoText("RED Wins !", "SUCCESS");
+				if (result[0] == 2) {
+					this->changeInfoText("You Won (5 Aligned) !", "SUCCESS");
+					this->end = 1;
+					this->playerT.setString("Game Over");
+					this->playerT.setPosition(840, 90);
+					this->playerT.setFillColor(sf::Color(255, 255, 255));
 				}
 
 				sf::CircleShape circle(200);
@@ -119,9 +146,13 @@ int GomokuA::checkMouseClick(int x, int y) {
 				this->goMatr[i][j] = 'B';
 				this->setPlayer(1);
 				this->stoneTab[i][j].setFillColor(sf::Color(0, 255, 255));
-				this->playerT.setString("Red Turn");
-				this->playerT.setFillColor(sf::Color(255, 0, 0));
-				//this->displayBoard();
+				if (this->end == 0) {
+					this->playerT.setString("IA Turn");
+					this->playerT.setFillColor(sf::Color(255, 0, 0));
+				}
+				this->pl->PyLoadFunction("put_player_pion");
+				this->pl->PyCallFunction(PyTuple_Pack(2, PyLong_FromLong(j), PyLong_FromLong(i)));
+
 				return (0);
 			}
 		}
@@ -189,6 +220,22 @@ void GomokuA::changeInfoText(std::string text, std::string type) {
 	}
 }
 
+//Pair
+void GomokuA::setPairB() {
+	this->pairB++;
+}
+void GomokuA::setPairR() {
+	this->pairR++;
+}
+
+int GomokuA::getPairB() {
+	return (this->pairB);
+}
+int GomokuA::getPairR() {
+	return (this->pairR);
+}
+//
+
 sf::Font GomokuA::getFont() {
 	return (this->font);
 }
@@ -203,6 +250,10 @@ sf::Text GomokuA::getInfoT() {
 
 sf::Text GomokuA::getText() {
 	return (this->playerT);
+}
+
+sf::Text GomokuA::getEndText() {
+	return (this->endT);
 }
 
 int GomokuA::getPlayer() {
@@ -221,9 +272,6 @@ sf::Sprite GomokuA::getSideBoard() {
 	return (this->sideboardSprite);
 }
 
-sf::Sprite GomokuA::getEndScreen() {
-	return (this->endScreenSprite);
-}
 
 //Constructor
 GomokuA::GomokuA() {
@@ -237,8 +285,15 @@ GomokuA::GomokuA() {
 	}
 
 	//Init Texts
+	this->endT.setFont(this->font);
+	this->endT.setString("Game Over");
+	this->endT.setCharacterSize(40);
+	this->endT.setFillColor(sf::Color(192, 192, 192));
+	this->endT.setStyle(sf::Text::Bold);
+	this->endT.setPosition(900, 500);
+
 	this->playerT.setFont(this->font);
-	this->playerT.setString("Blue Turn");
+	this->playerT.setString("Your Turn");
 	this->playerT.setCharacterSize(40);
 	this->playerT.setFillColor(sf::Color(0, 255, 255));
 	this->playerT.setStyle(sf::Text::Bold);
@@ -256,7 +311,9 @@ GomokuA::GomokuA() {
 	this->infoT.setString("");
 	this->infoT.setPosition(850, 600);
 
-
+	//Init Pair
+	this->pairB = 0;
+	this->pairR = 0;
 
 	//Init Go Matrix
 	this->goMatr.resize(19);
@@ -267,6 +324,9 @@ GomokuA::GomokuA() {
 			this->goMatr[i][j] = '0';
 		}
 	}
+
+	//Init End
+	this->end = 0;
 
 	//Init Coord Matrix
 	int cx = 40;
@@ -286,13 +346,10 @@ GomokuA::GomokuA() {
 		printG("couldnt load space texture");
 	if (!this->sideboardTexture.loadFromFile("sideboard_texture.jpg"))
 		printG("couldnt load sideboard texture");
-	if (!this->endScreenTexture.loadFromFile("endscreen.png"))
-		printG("couldnt load endscreen texture");
 
 	this->boardSprite.setTexture(this->boardTexture);
 	this->sideboardSprite.setTexture(this->sideboardTexture);
 	this->sideboardSprite.setPosition(sf::Vector2f(800, 0));
-	this->endScreenSprite.setTexture(this->endScreenTexture);
 
 	//Init Grid
 	float x1 = 40;

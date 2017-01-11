@@ -2,6 +2,7 @@
 //
 
 #include "stdafx.h"
+#include "PyLoader.h"
 #include "GameC.h"
 #include <iostream>
 #include <SFML/Graphics.hpp>
@@ -15,6 +16,8 @@ int main()
 {
 	sf::RenderWindow window(sf::VideoMode(1100, 800), "Gomoku 2D - Don't Resize Window !");
 	GomokuA* gomoku = new GomokuA();
+	gomoku->pl = new PyLoader();
+	gomoku->pl->PyLoadModule("ia");
 
 	while (window.isOpen())
 	{
@@ -23,7 +26,7 @@ int main()
 			if (event.type == sf::Event::Closed)
 				window.close();
 
-			if (event.type == sf::Event::MouseButtonPressed) {
+			if (event.type == sf::Event::MouseButtonPressed && (gomoku->end == 0)) {
 				//std::cout << "x: " << event.mouseButton.x << "\ny: " << event.mouseButton.y << std::endl << std::endl;
 				gomoku->checkMouseClick(event.mouseButton.x, event.mouseButton.y);
 			}
@@ -55,7 +58,10 @@ int main()
 		window.draw(gomoku->getInfoTText());
 		window.draw(gomoku->getInfoT());
 		window.display();
-		if (gomoku->getPlayer() == 1) {
+		if (gomoku->end == 1) {
+			window.draw(gomoku->getEndText());
+		}
+		if (gomoku->getPlayer() == 1 && gomoku->end == 0) {
 			gomoku->checkIAPlay();
 		}
 	}

@@ -4,5 +4,7 @@
 
 #include "stdafx.h"
 
+//#pragma comment( lib, "ia/python35.lib" )
+
 // TODO: reference any additional headers you need in STDAFX.H
 // and not in this file
